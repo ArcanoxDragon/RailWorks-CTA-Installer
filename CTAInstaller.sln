@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CTAInstaller", "CTAInstaller\CTAInstaller.csproj", "{2F1C01A2-A82B-41E2-B881-47327CAB8727}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateVersion", "CreateVersion\CreateVersion.csproj", "{0544A2DD-F8AE-4939-AAC2-2A54DE614BE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CTALib", "CTALib\CTALib.csproj", "{E026F3FA-F8FA-4E33-8817-FAB7AD870910}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2F1C01A2-A82B-41E2-B881-47327CAB8727}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F1C01A2-A82B-41E2-B881-47327CAB8727}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F1C01A2-A82B-41E2-B881-47327CAB8727}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F1C01A2-A82B-41E2-B881-47327CAB8727}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0544A2DD-F8AE-4939-AAC2-2A54DE614BE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0544A2DD-F8AE-4939-AAC2-2A54DE614BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0544A2DD-F8AE-4939-AAC2-2A54DE614BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0544A2DD-F8AE-4939-AAC2-2A54DE614BE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E026F3FA-F8FA-4E33-8817-FAB7AD870910}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E026F3FA-F8FA-4E33-8817-FAB7AD870910}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E026F3FA-F8FA-4E33-8817-FAB7AD870910}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E026F3FA-F8FA-4E33-8817-FAB7AD870910}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
