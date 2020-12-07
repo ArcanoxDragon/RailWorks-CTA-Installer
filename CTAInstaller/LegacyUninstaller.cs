@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace CTAInstaller
 {
 	static class LegacyUninstaller
 	{
-		public static void UninstallLegacyFrom( string rwLoc )
+		public static void UninstallLegacyFrom(string rwLoc)
 		{
-			foreach ( string uninstallDir in Installer.UninstallDirs )
+			foreach (var uninstallDir in Installer.UninstallDirs)
 			{
-				string rmDir = Path.Combine( rwLoc, uninstallDir );
+				var rmDir = Path.Combine(rwLoc, uninstallDir);
 
-				if ( Directory.Exists( rmDir ) )
-					Directory.Delete( rmDir, true );
+				if (Directory.Exists(rmDir))
+					Directory.Delete(rmDir, true);
 			}
 		}
-
 	}
 }

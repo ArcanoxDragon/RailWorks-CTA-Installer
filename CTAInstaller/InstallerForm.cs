@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -12,57 +6,55 @@ namespace CTAInstaller
 {
 	partial class InstallerForm : Form
 	{
-		private Installer installer;
+		private readonly Installer installer;
 
-		public InstallerForm( Installer installer )
+		public InstallerForm(Installer installer)
 		{
-			InitializeComponent();
+			this.InitializeComponent();
 
 			this.installer = installer;
 		}
 
-		private void InstallerForm_Load( object sender, EventArgs e )
+		private async void InstallerForm_Load(object sender, EventArgs e)
 		{
-			this.installer.ProgressChanged += OnInstallerProgressChanged;
-			this.installer.InstallCompleted += OnInstallerCompleted;
-			this.installer.InstallCancelled += OnInstallerCancelled;
+			this.installer.ProgressChanged  += this.OnInstallerProgressChanged;
+			this.installer.InstallCompleted += this.OnInstallerCompleted;
+			this.installer.InstallCancelled += this.OnInstallerCancelled;
 
-			this.installer.Install()
-				.ContinueWith( this.OnInstallTaskFinish );
+			await this.PerformInstallAsync();
 		}
 
-		void OnInstallerCompleted()
+		private void OnInstallerCompleted()
 		{
-			MessageBox.Show( "Installation completed successfully.", "Install Complete", MessageBoxButtons.OK, MessageBoxIcon.Information );
+			MessageBox.Show("Installation completed successfully.", "Install Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
-		void OnInstallerCancelled()
+		private void OnInstallerCancelled()
 		{
-			MessageBox.Show( "Installation was cancelled.", "Install Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			MessageBox.Show("Installation was cancelled.", "Install Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			this.Close();
 		}
 
-		async void OnInstallTaskFinish( Task installTask )
+		private async Task PerformInstallAsync()
 		{
 			try
 			{
-				await installTask;
+				await this.installer.Install();
 			}
-			catch ( Exception ex )
+			catch (Exception ex)
 			{
-				MessageBox.Show( "Error: " + ex.Message, "Error During Install", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				MessageBox.Show("Error: " + ex.Message, "Error During Install", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 
-			this.Invoke( new Action( this.Close ) );
+			this.Close();
 		}
 
-		void OnInstallerProgressChanged( string state, double progress )
+		private void OnInstallerProgressChanged(string state, double progress)
 		{
-			this.Invoke( new Action( () =>
-			{
+			this.Invoke(new Action(() => {
 				this.labelState.Text = state;
 
-				if ( progress >= 0 )
+				if (progress >= 0)
 				{
 					this.progressBar.Style = ProgressBarStyle.Continuous;
 					this.progressBar.Value = (int) ( progress * 100.0 );
@@ -71,17 +63,14 @@ namespace CTAInstaller
 				{
 					this.progressBar.Style = ProgressBarStyle.Marquee;
 				}
-			} ) );
+			}));
 		}
 
-		private void buttonCancel_Click( object sender, EventArgs e )
+		private void buttonCancel_Click(object sender, EventArgs e)
 		{
-			Task.Run( () => this.Invoke( new Action( () =>
-			{
-				this.labelState.Text = "Cancelling...";
-				this.progressBar.Style = ProgressBarStyle.Marquee;
-				this.buttonCancel.Enabled = false;
-			} ) ) );
+			this.labelState.Text      = "Cancelling...";
+			this.progressBar.Style    = ProgressBarStyle.Marquee;
+			this.buttonCancel.Enabled = false;
 
 			this.installer.Cancel();
 		}

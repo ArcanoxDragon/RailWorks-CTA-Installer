@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="WebBaseAddress" Type="(Web Service URL)" Scope="Application">
-      <Value Profile="(Default)">https://briman0094.com/rw_build/</Value>
+      <Value Profile="(Default)">https://rwcta.arcanox.me/</Value>
     </Setting>
   </Settings>
 </SettingsFile>

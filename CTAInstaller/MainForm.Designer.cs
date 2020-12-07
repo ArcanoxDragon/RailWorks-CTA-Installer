@@ -1,11 +1,14 @@
-﻿namespace CTAInstaller
+﻿using System.ComponentModel;
+using System.Windows.Forms;
+
+namespace CTAInstaller
 {
 	partial class MainForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -177,17 +180,17 @@
 
 		#endregion
 
-		private System.Windows.Forms.Label sLabelRWLoc;
-		private System.Windows.Forms.TextBox txtRWLoc;
-		private System.Windows.Forms.Button buttonBrowseRWLoc;
-		private System.Windows.Forms.Label labelCurrent;
-		private System.Windows.Forms.Label sLabelCurrent;
-		private System.Windows.Forms.ProgressBar loadingVersion;
-		private System.Windows.Forms.Label sLabelLatest;
-		private System.Windows.Forms.Label labelLatest;
-		private System.Windows.Forms.Button buttonExit;
-		private System.Windows.Forms.Button buttonInstall;
-		private System.Windows.Forms.OpenFileDialog openRWDialog;
+		private Label sLabelRWLoc;
+		private TextBox txtRWLoc;
+		private Button buttonBrowseRWLoc;
+		private Label labelCurrent;
+		private Label sLabelCurrent;
+		private ProgressBar loadingVersion;
+		private Label sLabelLatest;
+		private Label labelLatest;
+		private Button buttonExit;
+		private Button buttonInstall;
+		private OpenFileDialog openRWDialog;
 	}
 }
 

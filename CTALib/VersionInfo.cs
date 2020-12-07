@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CTALib
 {
@@ -18,7 +15,7 @@ namespace CTALib
 			{
 				Version = local.Version,
 				PublishDate = local.PublishDate,
-				Url = null
+				Url = null,
 			};
 		}
 	}
@@ -39,7 +36,7 @@ namespace CTALib
 			return new VersionInfoLocal
 			{
 				Version = remote.Version,
-				PublishDate = remote.PublishDate
+				PublishDate = remote.PublishDate,
 			};
 		}
 	}

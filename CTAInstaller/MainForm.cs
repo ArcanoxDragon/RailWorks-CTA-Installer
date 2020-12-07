@@ -1,201 +1,174 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Net.Http;
-using Newtonsoft.Json;
-using Microsoft.Win32;
-using System.IO;
+using CTAInstaller.Properties;
 using CTALib;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace CTAInstaller
 {
 	public partial class MainForm : Form
 	{
-		private string rwLoc;
-		private InstallState installState = InstallState.NotInstalled;
-		private VersionInfoLocal currentVersion;
+		private string            rwLoc;
+		private InstallState      installState = InstallState.NotInstalled;
+		private VersionInfoLocal  currentVersion;
 		private VersionInfoRemote latestVersion;
-		private bool hasLatest, validPath;
+		private bool              hasLatest, validPath;
 
 		public MainForm()
 		{
-			InitializeComponent();
+			this.InitializeComponent();
 		}
 
 		private bool ValidPath
 		{
-			get
-			{
-				return this.validPath;
-			}
+			get => this.validPath;
 			set
 			{
-				this.validPath = value;
+				this.validPath             = value;
 				this.buttonInstall.Enabled = value && this.hasLatest;
 			}
 		}
 
 		private bool HasLatest
 		{
-			get
-			{
-				return this.hasLatest;
-			}
+			get => this.hasLatest;
 			set
 			{
-				this.hasLatest = value;
+				this.hasLatest             = value;
 				this.buttonInstall.Enabled = value && this.validPath;
 			}
 		}
 
-		private void MainForm_Load( object sender, EventArgs e )
+		private async void MainForm_Load(object sender, EventArgs e)
 		{
-			Task.Run( (Func<Task<string>>) this.LoadLatestVersion )
-				.ContinueWith( this.OnLoadLatestVersion );
+			await this.LoadLatestVersion();
 
-			Task.Run( (Func<string>) this.DetectRWLocation )
-				.ContinueWith( async task => this.OnSetRWLocation( await task ) );
+			this.UpdateRailWorksLocation();
 		}
 
-		private string DetectRWLocation()
+		private void UpdateRailWorksLocation(string location = default)
 		{
-			RegistryKey steamKey = Registry.CurrentUser.OpenSubKey( "Software\\Valve\\Steam" );
-			string steamLoc = Path.GetFullPath( (string) steamKey.GetValue( "SteamPath", null ) );
+			this.rwLoc = location ?? this.FindRailWorksLocation();
 
-			if ( steamLoc != null )
+			if (this.rwLoc != null)
 			{
-				return Path.Combine( steamLoc, "SteamApps\\Common\\RailWorks\\" );
-			}
+				this.txtRWLoc.Text = this.rwLoc;
+				this.ValidPath     = true;
 
-			return null;
-		}
-
-		private void OnSetRWLocation( string rwLocation )
-		{
-			this.rwLoc = rwLocation;
-
-			if ( rwLocation != null )
-			{
-				this.Invoke( new Action( () =>
-				{
-					this.txtRWLoc.Text = rwLocation;
-					this.ValidPath = true;
-				} ) );
-
-				Task.Run( (Action) this.DetectCurrentVersion );
+				this.UpdateCurrentVersion();
 			}
 			else
 			{
-				this.Invoke( new Action( () =>
-				{
-					this.txtRWLoc.Text = "";
-					this.ValidPath = false;
-				} ) );
+				this.txtRWLoc.Text = "";
+				this.ValidPath     = false;
 			}
 		}
 
-		private void DetectCurrentVersion()
+		private string FindRailWorksLocation()
 		{
-			string verFile = Path.Combine( this.rwLoc, Installer.ProjectRoot, "Version.json" );
-			string versionText = "None";
+			var steamKey = Registry.CurrentUser.OpenSubKey("Software\\Valve\\Steam");
+
+			if (steamKey == null)
+				return null;
+
+			var steamLoc = Path.GetFullPath((string) steamKey.GetValue("SteamPath", null));
+
+			return Path.Combine(steamLoc, "SteamApps\\Common\\RailWorks\\");
+		}
+
+		private void UpdateCurrentVersion()
+		{
+			var verFile     = Path.Combine(this.rwLoc, Installer.ProjectRoot, "Version.json");
+			var versionText = "None";
 			this.currentVersion = null;
 
-			if ( !Installer.UninstallDirs.Select( d => Path.Combine( this.rwLoc, d ) ).Any( Directory.Exists ) )
+			if (!Installer.UninstallDirs.Select(d => Path.Combine(this.rwLoc, d)).Any(Directory.Exists))
 			{
 				this.installState = InstallState.NotInstalled;
 			}
 			else
 			{
-				if ( File.Exists( verFile ) )
+				if (File.Exists(verFile))
 				{
-					string fileContents = File.ReadAllText( verFile );
-					VersionInfoLocal versionInfo = JsonConvert.DeserializeObject<VersionInfoLocal>( fileContents );
+					var fileContents = File.ReadAllText(verFile);
+					var versionInfo  = JsonConvert.DeserializeObject<VersionInfoLocal>(fileContents);
 
-					if ( versionInfo != null )
+					if (versionInfo != null)
 					{
-						this.installState = InstallState.Installed;
+						this.installState   = InstallState.Installed;
 						this.currentVersion = versionInfo;
-						versionText = string.Format( "Version {0}, published {1} (UTC)", versionInfo.Version, versionInfo.PublishDate );
+						versionText         = $"Version {versionInfo.Version}, published {versionInfo.PublishDate} (UTC)";
 					}
 					else
 					{
 						this.installState = InstallState.LegacyInstalled;
-						versionText = "Unknown (Invalid Version File)";
+						versionText       = "Unknown (Invalid Version File)";
 					}
 				}
 				else
 				{
 					this.installState = InstallState.LegacyInstalled;
-					versionText = "Legacy";
+					versionText       = "Legacy";
 				}
 			}
 
-			this.Invoke( new Action( () =>
-			{
+			this.Invoke(new Action(() => {
 				this.labelCurrent.Text = versionText;
-			} ) );
+			}));
 		}
 
-		private Task<string> LoadLatestVersion()
+		private async Task LoadLatestVersion()
 		{
-			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri( Properties.Settings.Default.WebBaseAddress );
-			client.Timeout = TimeSpan.FromSeconds( 2 );
+			var client = new HttpClient {
+				BaseAddress = new Uri(Settings.Default.WebBaseAddress),
+				Timeout     = TimeSpan.FromSeconds(2),
+			};
 
-			return client.GetStringAsync( "latest.aspx" );
+			var latest     = await client.GetStringAsync("latest.aspx");
+			var latestInfo = JsonConvert.DeserializeObject<VersionInfoRemote>(latest);
+
+			this.latestVersion          = latestInfo;
+			this.loadingVersion.Visible = false;
+			this.labelLatest.Visible    = true;
+			this.HasLatest              = true;
+
+			this.labelLatest.Text = $"Version {latestInfo.Version}, published {latestInfo.PublishDate} (UTC)";
 		}
 
-		private async void OnLoadLatestVersion( Task<string> loadTask )
-		{
-			string latest = await loadTask;
-			VersionInfoRemote latestInfo = JsonConvert.DeserializeObject<VersionInfoRemote>( latest );
-			this.latestVersion = latestInfo;
-
-			this.Invoke( new Action( () =>
-			{
-				this.loadingVersion.Visible = false;
-				this.labelLatest.Visible = true;
-				this.HasLatest = true;
-
-				this.labelLatest.Text = string.Format( "Version {0}, published {1} (UTC)", latestInfo.Version, latestInfo.PublishDate );
-			} ) );
-		}
-
-		private void buttonExit_Click( object sender, EventArgs e )
+		private void buttonExit_Click(object sender, EventArgs e)
 		{
 			Application.Exit();
 		}
 
-		private void MainForm_FormClosed( object sender, FormClosedEventArgs e )
+		private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
 		{
 			Application.Exit();
 		}
 
-		private void buttonBrowseRWLoc_Click( object sender, EventArgs e )
+		private void buttonBrowseRWLoc_Click(object sender, EventArgs e)
 		{
-			if ( this.openRWDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK )
+			if (this.openRWDialog.ShowDialog() == DialogResult.OK)
 			{
-				if ( Path.GetFileName( this.openRWDialog.FileName ).ToLower() == "railworks.exe" )
+				if (Path.GetFileName(this.openRWDialog.FileName).ToLower() == "railworks.exe")
 				{
-					this.OnSetRWLocation( Path.GetDirectoryName( this.openRWDialog.FileName ) );
+					this.UpdateRailWorksLocation(Path.GetDirectoryName(this.openRWDialog.FileName));
 				}
 			}
 		}
 
-		private void buttonInstall_Click( object sender, EventArgs e )
+		private void buttonInstall_Click(object sender, EventArgs e)
 		{
-			Installer installer = new Installer( this.latestVersion, this.currentVersion, this.installState, this.rwLoc );
-			InstallerForm installerForm = new InstallerForm( installer );
+			var installer     = new Installer(this.latestVersion, this.currentVersion, this.installState, this.rwLoc);
+			var installerForm = new InstallerForm(installer);
 
 			installerForm.ShowDialog();
 
-			Task.Run( (Action) this.DetectCurrentVersion );
+			this.UpdateCurrentVersion();
 		}
 	}
 }

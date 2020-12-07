@@ -1,11 +1,14 @@
-﻿namespace CTAInstaller
+﻿using System.ComponentModel;
+using System.Windows.Forms;
+
+namespace CTAInstaller
 {
 	partial class InstallerForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -84,8 +87,8 @@
 
 		#endregion
 
-		private System.Windows.Forms.Label labelState;
-		private System.Windows.Forms.ProgressBar progressBar;
-		private System.Windows.Forms.Button buttonCancel;
+		private Label labelState;
+		private ProgressBar progressBar;
+		private Button buttonCancel;
 	}
 }
